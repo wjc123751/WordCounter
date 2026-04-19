@@ -1,0 +1,11 @@
+# VSCode配置
+.vscode/
+*.code-workspace
+
+# 编译目录
+build/
+cmake-*/
+
+# 系统缓存
+.DS_Store
+Thumbs.db
