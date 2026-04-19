@@ -1,5 +1,0 @@
-hello hello world
-c++ is fun, fun!
-Hello world world
-test test test
-wjc wjc
