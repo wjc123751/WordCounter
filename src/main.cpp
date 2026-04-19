@@ -9,10 +9,9 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-// 获取 exe 所在的文件夹（核心！）
 fs::path getExeDir()
 {
-    wchar_t buffer[MAX_PATH];
+    wchar_t buffer[MAX_PATH] = { 0 };
     GetModuleFileNameW(NULL, buffer, MAX_PATH);
     return fs::path(buffer).parent_path();
 }
@@ -24,25 +23,30 @@ int main()
     SetConsoleCP(65001);
 #endif
 
-    // cout << "当前工作目录: " << fs::current_path() << endl;
+    fs::path exeFolder = getExeDir();
+    fs::path txtPath = exeFolder / L"test.txt";
 
-    // 重点：获取 exe 所在目录的 test.txt
-    fs::path txtPath = getExeDir() / "test.txt";
+    cout << "=== 单词统计工具 ===" << endl;
+    // cout << "EXE目录: " << exeFolder << endl;
+    // cout << "读取文件: " << txtPath << endl;
+
+    if (!fs::exists(txtPath)) {
+        cout << "\n错误：test.txt 不存在！" << endl;
+        system("pause");
+        return 1;
+    }
 
     WordCounter counter;
 
-    if (counter.countFromFile(txtPath.string())) {
+    // 宽字符打开，支持中文文件夹
+    if (counter.countFromFile(txtPath.wstring())) {
+        cout << "\n统计结果：\n" << endl;
         counter.printResult();
+    } else {
+        cout << "\n文件打开失败！" << endl;
     }
 
-    // cout << "\n===== 从外部获取单词列表 =====\n";
-    // auto result = counter.getWordMap();
-    // for (const auto& p : result)
-    // {
-    //     cout << "单词：" << p.first << " 出现次数：" << p.second << endl;
-    // }
-
+    cout << "\n====================" << endl;
     system("pause");
-
     return 0;
 }

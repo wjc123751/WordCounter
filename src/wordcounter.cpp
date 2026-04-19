@@ -1,46 +1,67 @@
 #include "wordcounter.h"
-#include <fstream>
-#include <cctype>
 #include <iostream>
+#include <cstdio>
+#include <algorithm>
 
 using namespace std;
 
-string WordCounter::cleanWord(const string& word) const
+// 清洗单词：只保留英文字母，全部转小写
+string WordCounter::cleanWord(const string& word)
 {
     string res;
-    for (char c : word) {
-        if (isalpha(c)) {          // 只保留字母
-            res += tolower(c);     // 转小写
+    for (char c : word)
+    {
+        // 仅保留大小写英文字母
+        if (isalpha(c))
+        {
+            res += tolower(c);
         }
     }
     return res;
 }
 
-bool WordCounter::countFromFile(const string& filename)
+bool WordCounter::countFromFile(const wstring& filename)
 {
-    ifstream file(filename);
-    if (!file.is_open()) {
-        cerr << "打开文件失败: " << filename << endl;
+    FILE* fp = nullptr;
+    // 原生宽字符打开，完美支持中文文件夹
+    _wfopen_s(&fp, filename.c_str(), L"r, ccs=UTF-8");
+
+    if (!fp)
+    {
+        wcerr << L"打开文件失败: " << filename << endl;
         return false;
     }
 
-    string word;
-    while (file >> word) {      // 自动按空格拆分单词
-        string clean = cleanWord(word);
-        if (!clean.empty()) {
-            m_wordMap[clean]++;
+    wchar_t buf[256];
+    // 按空格/换行 逐个读取独立单词，而不是整行读取
+    while (fwscanf(fp, L"%ls", buf) != EOF)
+    {
+        wstring w_word(buf);
+        string normal_word(w_word.begin(), w_word.end());
+
+        // 清洗单词
+        string clean_word = cleanWord(normal_word);
+
+        // 空字符跳过
+        if (!clean_word.empty())
+        {
+            m_wordMap[clean_word]++;
         }
     }
 
-    file.close();
+    fclose(fp);
     return true;
 }
 
+// 打印统计结果
 void WordCounter::printResult() const
 {
-    cout << "\n===== 单词统计结果 =====\n";
-    for (const auto& pair : m_wordMap) {
-        cout << pair.first << " : " << pair.second << endl;
+    cout << endl;
+    cout << "单词        出现次数" << endl;
+    cout << "=====================" << endl;
+    for (const auto& item : m_wordMap)
+    {
+        cout << item.first << "\t\t" << item.second << endl;
     }
 }
 
